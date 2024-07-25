@@ -1,7 +1,15 @@
 import React, { useEffect, useRef, useState } from 'react'
-import { autoGrow, setZIndex , bodyParser} from '../utils/Utils'
+import { autoGrow, setZIndex , bodyParser, setNewOffset} from '../utils/Utils'
 import { Trash } from '../icons/Trash'
+import { Spinner } from '../icons/Spinner'
+import { db } from '../appwrite/databases'
+
+
+
 function NoteCard({note}) {
+    const [saving, setSaving] = useState(false);
+    const keyUpTimer = useRef(null);
+
     const body = bodyParser(note.body)
     const colors = JSON.parse(note.colors)
     const defaultPosition = JSON.parse(note.position)
@@ -29,17 +37,17 @@ function NoteCard({note}) {
         mouseStartPos.y = e.clientY;
      
         //3 - Update card top and left position.
-        const newX = cardRef.current.offsetLeft - mouseMoveDir.x
-        const newY =  cardRef.current.offsetTop - mouseMoveDir.y
-        setPosition({
-            x: newX > 0 ? newX : 0,
-            y: newY > 0 ? newY : 0
-        });
+        const newPosition = setNewOffset(cardRef.current, mouseMoveDir)
+        setPosition(newPosition)
     };
 
     const mouseUp  = (e)=>{
         document.removeEventListener("mousemove", mouseMove)
         document.removeEventListener("mouseup", mouseUp)
+
+        const newPosition = setNewOffset(cardRef.current)
+        saveData('position', newPosition)
+
     }
 
     const mouseDown = (e) => {
@@ -51,6 +59,31 @@ function NoteCard({note}) {
         document.addEventListener("mouseup", mouseUp);
     };
 
+
+    const saveData = async (key, value) => {
+        const payload = { [key]: JSON.stringify(value) }
+        try {
+            await db.notes.update(note.$id, payload)
+        } catch (error) {
+            console.log(error)
+        }
+        setSaving(false);
+    }
+
+    const handleKeyUp = async () => {
+        //1 - Initiate "saving" state
+        setSaving(true);
+     
+        //2 - If we have a timer id, clear it so we can add another two seconds
+        if (keyUpTimer.current) {
+            clearTimeout(keyUpTimer.current);
+        }
+     
+        //3 - Set timer to trigger save in 2 seconds
+        keyUpTimer.current = setTimeout(() => {
+            saveData("body", textAreaRef.current.value);
+        }, 2000);
+    };
 
 
   return (
@@ -66,11 +99,20 @@ function NoteCard({note}) {
         className='card-header' 
         style={{backgroundColor: colors.colorHeader}}>
             <Trash />
+            {
+            saving && (
+                <div className="card-saving">
+                <Spinner color={colors.colorText} />
+                <span style={{ color: colors.colorText }}>Saving...</span>
+            </div>
+            )
+            }
         </div>
 
 
         <div className='card-body'>
             <textarea 
+            onKeyUp={handleKeyUp}
             onFocus={() => setZIndex(cardRef.current)}
             style={{color: colors.colorText}} 
             defaultValue={body}
