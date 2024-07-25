@@ -1,22 +1,10 @@
-import React, { useEffect, useState } from 'react'
-// import {fakeData as notes } from '../assets/fakeData.js'
-import {db} from '../appwrite/databases.js'
+import { useContext } from 'react'
 import NoteCard from '../components/NoteCard'
-import { databases } from '../appwrite/config.js'
+import { NoteContext } from '../context/NoteContext.jsx'
 
 function NotesPage() {
 
-  const [notes, setNotes] = useState([])
-
-  const init = async () => {
-    const response = await db.notes.list()
-    
-    setNotes(response.documents)
-  }
-
-  useEffect(()=>{
-    init()
-  }, [])
+  const {notes} = useContext(NoteContext)
 
 
   return (

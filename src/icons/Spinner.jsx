@@ -1,4 +1,4 @@
-export const Spinner = ({ color = "#fff", size = "20" }) => {
+const Spinner = ({ color = "#fff", size = "20" }) => {
     return (
         <svg
             className="spinner"
@@ -18,4 +18,6 @@ export const Spinner = ({ color = "#fff", size = "20" }) => {
         </svg>
     );
 };
+
+export default Spinner
  

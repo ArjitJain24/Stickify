@@ -1,8 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { autoGrow, setZIndex , bodyParser, setNewOffset} from '../utils/Utils'
-import { Trash } from '../icons/Trash'
-import { Spinner } from '../icons/Spinner'
+import Spinner  from '../icons/Spinner'
 import { db } from '../appwrite/databases'
+import DeleteButton from './DeleteButton'
 
 
 
@@ -51,12 +51,14 @@ function NoteCard({note}) {
     }
 
     const mouseDown = (e) => {
-        setZIndex(cardRef.current)
-        mouseStartPos.x = e.clientX;
-        mouseStartPos.y = e.clientY;
-    
-        document.addEventListener("mousemove", mouseMove);
-        document.addEventListener("mouseup", mouseUp);
+        if(e.target.className === 'card-header'){
+            setZIndex(cardRef.current)
+            mouseStartPos.x = e.clientX;
+            mouseStartPos.y = e.clientY;
+        
+            document.addEventListener("mousemove", mouseMove);
+            document.addEventListener("mouseup", mouseUp);
+        }
     };
 
 
@@ -98,7 +100,9 @@ function NoteCard({note}) {
         onMouseDown={mouseDown}
         className='card-header' 
         style={{backgroundColor: colors.colorHeader}}>
-            <Trash />
+            <DeleteButton 
+            noteId={note.$id}
+            />
             {
             saving && (
                 <div className="card-saving">
