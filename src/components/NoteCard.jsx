@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react'
+import { autoGrow, setZIndex } from '../utils/Utils'
 import { Trash } from '../icons/Trash'
 function NoteCard({note}) {
     const body = JSON.parse(note.body)
@@ -9,11 +10,6 @@ function NoteCard({note}) {
     const textAreaRef = useRef(null)
     const cardRef = useRef(null)
 
-    const autoGrow = (textAreaRef)=>{
-        const {current} = textAreaRef
-        current.style.height = "0" // reset the height
-        current.style.height = current.scrollHeight + "px" // set the new height
-    }
 
     useEffect(()=>{
         autoGrow(textAreaRef)
@@ -33,33 +29,32 @@ function NoteCard({note}) {
         mouseStartPos.y = e.clientY;
      
         //3 - Update card top and left position.
+        const newX = cardRef.current.offsetLeft - mouseMoveDir.x
+        const newY =  cardRef.current.offsetTop - mouseMoveDir.y
         setPosition({
-            x: cardRef.current.offsetLeft - mouseMoveDir.x,
-            y: cardRef.current.offsetTop - mouseMoveDir.y,
+            x: newX > 0 ? newX : 0,
+            y: newY > 0 ? newY : 0
         });
     };
 
     const mouseUp  = (e)=>{
         document.removeEventListener("mousemove", mouseMove)
         document.removeEventListener("mouseup", mouseUp)
-}
+    }
 
-const mouseDown = (e) => {
-    mouseStartPos.x = e.clientX;
-    mouseStartPos.y = e.clientY;
- 
-    document.addEventListener("mousemove", mouseMove);
-    document.addEventListener("mouseup", mouseUp);
-};
-
-
+    const mouseDown = (e) => {
+        setZIndex(cardRef.current)
+        mouseStartPos.x = e.clientX;
+        mouseStartPos.y = e.clientY;
+    
+        document.addEventListener("mousemove", mouseMove);
+        document.addEventListener("mouseup", mouseUp);
+    };
 
 
 
   return (
     <div  
-    draggable
-    onMouseDown={mouseDown}
     className='card' 
     style={{backgroundColor: colors.colorBody, 
             left: `${position.x}px`, 
@@ -67,7 +62,7 @@ const mouseDown = (e) => {
     ref={cardRef}>
 
         <div 
-        draggable
+        onMouseDown={mouseDown}
         className='card-header' 
         style={{backgroundColor: colors.colorHeader}}>
             <Trash />
@@ -76,6 +71,7 @@ const mouseDown = (e) => {
 
         <div className='card-body'>
             <textarea 
+            onFocus={() => setZIndex(cardRef.current)}
             style={{color: colors.colorText}} 
             defaultValue={body}
             ref={textAreaRef}
