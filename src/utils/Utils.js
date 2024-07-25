@@ -13,3 +13,13 @@ export const setZIndex = (selectedCard) => {
     }
   });
 };
+
+export const bodyParser = (value) => {
+  try {
+    // a valid json string
+    return JSON.parse(value);
+  } catch (error) {
+    // not a valid json string so just return the value
+    return value;
+  }
+};

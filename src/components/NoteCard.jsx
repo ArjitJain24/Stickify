@@ -1,8 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react'
-import { autoGrow, setZIndex } from '../utils/Utils'
+import { autoGrow, setZIndex , bodyParser} from '../utils/Utils'
 import { Trash } from '../icons/Trash'
 function NoteCard({note}) {
-    const body = JSON.parse(note.body)
+    const body = bodyParser(note.body)
     const colors = JSON.parse(note.colors)
     const defaultPosition = JSON.parse(note.position)
     const [position, setPosition] = useState(defaultPosition)
